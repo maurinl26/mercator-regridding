@@ -88,13 +88,15 @@ gaussien (pas un artefact géographique).
 ## App interactive (Streamlit)
 
 ```bash
-uv run streamlit run app/streamlit_app.py
+uv run mercator-regridding-app
 ```
+
+(wrapper de `streamlit run app/streamlit_app.py` ; les options Streamlit passent telles quelles, ex. `uv run mercator-regridding-app --server.port 8502 --server.headless true`).
 
 Affiche côte à côte la grille native et la grille regrillée, avec des
 sliders pour ajuster la résolution cible, le rayon d'influence et le sigma
 du lissage gaussien, plus un champ vectoriel (quiver) et un contrôle
-qualité (écart de moyenne). Pensée pour être manipulée directement, sans
+qualité (écart de moyenne). Les maillages (natif déformé, cible régulière) sont affichés sur les cartes, plus un zoom qui superpose les deux grilles (natif en bleu, cible en rouge) pour visualiser la transformation. Pensée pour être manipulée directement, sans
 lire le code.
 
 ## Structure
@@ -108,6 +110,8 @@ mercator-regridding/
 ├── src/
 │   └── regridding/
 │       ├── core.py          # regrid_scalar, regrid_vector, build_target_grid
+│       ├── app.py           # entry point Streamlit
+│       ├── viz.py           # tracé des maillages
 │       ├── download.py      # téléchargement des données d'exemple
 │       └── example.py       # script CLI de bout en bout
 ├── pyproject.toml
@@ -128,3 +132,10 @@ uv sync
 
 `uv.lock` garantit que la réinstallation est rapide (tout est en cache
 local) et identique.
+
+## Troubleshooting Streamlit
+
+- `bad interpreter ... .venv/bin/python` : venv déplacé, voir ci-dessus.
+- Page blanche au premier chargement : le regrillage à froid prend quelques secondes ; recharger la page. Le warning pyresample "more than 8 neighbours" est attendu (rayon d'influence large).
+- Port occupé : `uv run mercator-regridding-app --server.port 8502`.
+- Message "Données introuvables" : lancer `uv run mercator-regridding-download`.

@@ -2,7 +2,7 @@
 
 Lancer avec l'environnement uv du projet :
 
-    uv run streamlit run app/streamlit_app.py
+    uv run mercator-regridding-app
 
 Présente, à titre d'exemple, le passage d'une grille native NEMO/ORCA
 (curvilinéaire, C-grid) vers une grille standard régulière -- la
@@ -18,6 +18,7 @@ import streamlit as st
 import xarray as xr
 
 from regridding.core import build_target_grid, regrid_scalar, regrid_vector
+from regridding.viz import draw_mesh
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "NemoNorthSeaORCA025-N006_data"
 
@@ -86,7 +87,7 @@ except (FileNotFoundError, StopIteration):
     data_available = False
     st.warning(
         "Données introuvables. Lancer d'abord : "
-        "`uv run python scripts/download_data.py`."
+        "`uv run mercator-regridding-download`."
     )
 
 if not data_available:
@@ -96,6 +97,9 @@ st.sidebar.header("Paramètres du regrillage")
 resolution = st.sidebar.slider("Résolution de la grille cible (°)", 0.02, 0.3, 0.1, 0.02)
 radius_km = st.sidebar.slider("Rayon d'influence (km)", 10, 150, 50, 10)
 sigma_km = st.sidebar.slider("Sigma (lissage gaussien, km)", 5, 100, 25, 5)
+
+show_mesh = st.sidebar.checkbox("Afficher les maillages sur les cartes", value=True)
+mesh_step = st.sidebar.slider("Densité des lignes de maillage (1 ligne sur N)", 1, 20, 6)
 
 st.sidebar.info(
     "Méthode : pondération gaussienne (kd-tree, pyresample). Pas de "
@@ -116,6 +120,8 @@ with col1:
     im = ax.pcolormesh(lon_in, lat_in, uos, shading="auto", cmap="RdBu_r")
     ax.set_xlabel("longitude")
     ax.set_ylabel("latitude")
+    if show_mesh:
+        draw_mesh(ax, lon_in, lat_in, step=mesh_step, color="k", lw=0.3, alpha=0.5)
     ax.set_title("uos — grille native (m/s)")
     fig.colorbar(im, ax=ax, label="m/s")
     st.pyplot(fig)
@@ -127,9 +133,37 @@ with col2:
     im = ax.pcolormesh(lon_out, lat_out, scalar_out, shading="auto", cmap="RdBu_r")
     ax.set_xlabel("longitude")
     ax.set_ylabel("latitude")
+    if show_mesh:
+        draw_mesh(ax, lon_out, lat_out, step=max(1, mesh_step * 3), color="k", lw=0.3, alpha=0.5)
     ax.set_title(f"uos — regrillé ({resolution}°, gauss)")
     fig.colorbar(im, ax=ax, label="m/s")
     st.pyplot(fig)
+
+st.divider()
+st.subheader("Zoom sur les maillages : native (bleu) vs cible (rouge)")
+st.write(
+    "Chaque point de la grille cible (rouge, régulière) est calculé à partir "
+    "des points voisins de la grille native (bleue, déformée) : c'est ce "
+    "passage qui est réalisé par le regrillage."
+)
+lo_min, lo_max = float(lon_in.min()), float(lon_in.max())
+la_min, la_max = float(lat_in.min()), float(lat_in.max())
+zc1, zc2, zc3 = st.columns(3)
+zlon = zc1.slider("Longitude centre", lo_min, lo_max, 5.0)
+zlat = zc2.slider("Latitude centre", la_min, la_max, 58.0)
+zsize = zc3.slider("Taille de la fenêtre (°)", 1.0, 15.0, 4.0)
+bbox = (zlon - zsize, zlon + zsize, zlat - zsize / 2, zlat + zsize / 2)
+
+fig, ax = plt.subplots(figsize=(9, 5))
+ax.pcolormesh(lon_in, lat_in, uos, shading="auto", cmap="RdBu_r", alpha=0.25)
+draw_mesh(ax, lon_in, lat_in, step=1, bbox=bbox, color="tab:blue", lw=0.8, alpha=0.9, label="native")
+draw_mesh(ax, lon_out, lat_out, step=1, bbox=bbox, color="tab:red", lw=0.5, alpha=0.8, label="cible")
+ax.set_xlim(bbox[0], bbox[1])
+ax.set_ylim(bbox[2], bbox[3])
+ax.set_xlabel("longitude")
+ax.set_ylabel("latitude")
+ax.legend(loc="upper right")
+st.pyplot(fig)
 
 st.divider()
 st.subheader("3. Champ vectoriel (U, V) regrillé")

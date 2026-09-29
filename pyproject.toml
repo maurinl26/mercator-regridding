@@ -21,6 +21,7 @@ dependencies = [
 [project.scripts]
 mercator-regridding-download = "regridding.download:main"
 mercator-regridding-example = "regridding.example:main"
+mercator-regridding-app = "regridding.app:main"
 
 [build-system]
 requires = ["hatchling"]
