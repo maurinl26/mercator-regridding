@@ -4,7 +4,7 @@ Lancer avec l'environnement uv du projet :
 
     uv run mercator-regridding-app
 
-Présente, à titre d'exemple, le passage d'une grille native NEMO/ORCA
+Prototype illustrant le passage d'une grille native NEMO/ORCA
 (curvilinéaire, C-grid) vers une grille standard régulière -- la
 problématique centrale du DCE Mercator Ocean « Cloud Optimised Regridding »
 (24249L00). Données : jeu d'exemple NEMO/ORCA025, mer du Nord (OceanParcels).
@@ -23,7 +23,7 @@ from regridding.viz import draw_mesh
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "NemoNorthSeaORCA025-N006_data"
 
-st.set_page_config(page_title="Regrillage Mercator — exemple", layout="wide")
+st.set_page_config(page_title="Regrillage Mercator — prototype", layout="wide")
 
 LAND_COLOR = "#d9cfae"
 
@@ -81,7 +81,7 @@ Le service sera utilisable de deux façons :
 connexion au MDS ni à EDITO, pas d'interface MCP.*
 """
 )
-st.caption("Données : jeu d'exemple NEMO/ORCA025 (OceanParcels). Prototype.")
+st.caption("Données : NEMO/ORCA025, mer du Nord (jeu public OceanParcels).")
 
 
 @st.cache_data
