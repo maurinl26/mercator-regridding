@@ -93,6 +93,7 @@ def regrid_scalar(
             target,
             radius_of_influence=radius_of_influence,
             sigmas=sigma,
+            fill_value=None,  # hors domaine source : masqué (et non 0)
         )
     else:
         raise ValueError(f"Méthode inconnue : {method}")

@@ -13,6 +13,7 @@ problématique centrale du DCE Mercator Ocean « Cloud Optimised Regridding »
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 import numpy as np
 import streamlit as st
 import xarray as xr
@@ -23,6 +24,20 @@ from regridding.viz import draw_mesh
 DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "NemoNorthSeaORCA025-N006_data"
 
 st.set_page_config(page_title="Regrillage Mercator — exemple", layout="wide")
+
+LAND_COLOR = "#d9cfae"
+
+
+def plot_field(ax, lon, lat, field, land, outside=None, **kw):
+    """Champ sur la mer ; terre en aplat beige ; trait de côte en noir."""
+    sea = np.ma.masked_where(land | ~np.isfinite(np.ma.filled(field, np.nan)), field)
+    ax.set_facecolor(LAND_COLOR)
+    im = ax.pcolormesh(lon, lat, sea, shading="auto", cmap="RdBu_r", **kw)
+    ax.contour(lon, lat, land.astype(float), levels=[0.5], colors="k", linewidths=0.9)
+    if outside is not None and outside.any():  # hors emprise : blanc
+        ax.pcolormesh(lon, lat, np.ma.masked_where(~outside, outside), shading="auto",
+                      cmap=ListedColormap(["white"]))
+    return im
 
 st.title("Regrillage océanographique : de la grille native à la grille standard")
 st.markdown(
@@ -62,6 +77,13 @@ def load_velocity_fields():
 
 
 @st.cache_data
+def load_land_mask():
+    """Masque terre (True) déduit des champs de vitesse : NaN ou vitesse nulle exacte."""
+    uos, vos = load_velocity_fields()
+    return np.isnan(uos) | np.isnan(vos) | ((uos == 0) & (vos == 0))
+
+
+@st.cache_data
 def compute_regridding(resolution_deg: float, radius_km: float, sigma_km: float):
     lon_in, lat_in = load_mesh_mask()
     uos, vos = load_velocity_fields()
@@ -87,7 +109,16 @@ def compute_regridding(resolution_deg: float, radius_km: float, sigma_km: float)
         radius_of_influence=radius_km * 1000,
         sigma=sigma_km * 1000,
     )
-    return lon_out, lat_out, result_scalar.data, u_result.data, v_result.data
+    land_out = regrid_scalar(
+        lon_in, lat_in, load_land_mask().astype(float), lon_out, lat_out,
+        method="gauss",
+        radius_of_influence=radius_km * 1000,
+        sigma=sigma_km * 1000,
+    ).data
+    outside_out = np.ma.getmaskarray(land_out)  # hors emprise de la grille native
+    land_out = np.ma.filled(land_out, 0.0) >= 0.5
+    return (lon_out, lat_out, result_scalar.data, u_result.data, v_result.data,
+            land_out, outside_out)
 
 
 try:
@@ -143,17 +174,18 @@ with st.expander("Mode avancé : paramètres du lissage et affichage"):
     show_mesh = a3.checkbox("Afficher les maillages", value=True)
     mesh_step = a4.slider("1 ligne de maillage sur N", 1, 20, 6)
 
-lon_out, lat_out, scalar_out, u_out, v_out = compute_regridding(
+lon_out, lat_out, scalar_out, u_out, v_out, land_out, outside_out = compute_regridding(
     resolution, radius_km, sigma_km
 )
 
+land_in = load_land_mask()
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("1. Grille native (curvilinéaire ORCA025)")
     st.write(f"Dimensions : {lon_in.shape[0]} × {lon_in.shape[1]}")
     fig, ax = plt.subplots(figsize=(6, 5))
-    im = ax.pcolormesh(lon_in, lat_in, uos, shading="auto", cmap="RdBu_r")
+    im = plot_field(ax, lon_in, lat_in, uos, land_in)
     ax.set_xlabel("longitude")
     ax.set_ylabel("latitude")
     if show_mesh:
@@ -166,7 +198,7 @@ with col2:
     st.subheader("2. Grille standard (régulière)")
     st.write(f"Dimensions : {lon_out.shape[0]} × {lon_out.shape[1]}")
     fig, ax = plt.subplots(figsize=(6, 5))
-    im = ax.pcolormesh(lon_out, lat_out, scalar_out, shading="auto", cmap="RdBu_r")
+    im = plot_field(ax, lon_out, lat_out, scalar_out, land_out, outside_out)
     ax.set_xlabel("longitude")
     ax.set_ylabel("latitude")
     if show_mesh:
@@ -191,7 +223,8 @@ zsize = zc3.slider("Taille de la fenêtre (°)", 1.0, 15.0, 4.0)
 bbox = (zlon - zsize, zlon + zsize, zlat - zsize / 2, zlat + zsize / 2)
 
 fig, ax = plt.subplots(figsize=(9, 5))
-ax.pcolormesh(lon_in, lat_in, uos, shading="auto", cmap="RdBu_r", alpha=0.25)
+plot_field(ax, lon_in, lat_in, uos, land_in, alpha=0.35)
+ax.contour(lon_out, lat_out, land_out.astype(float), levels=[0.5], colors="tab:red", linewidths=1.2, linestyles="--")
 draw_mesh(ax, lon_in, lat_in, step=1, bbox=bbox, color="tab:blue", lw=0.8, alpha=0.9, label="native")
 draw_mesh(ax, lon_out, lat_out, step=1, bbox=bbox, color="tab:red", lw=0.5, alpha=0.8, label="cible")
 ax.set_xlim(bbox[0], bbox[1])
@@ -214,19 +247,21 @@ step = max(1, lon_out.shape[0] // 40)
 ax.quiver(
     lon_out[::step, ::step],
     lat_out[::step, ::step],
-    u_out[::step, ::step],
-    v_out[::step, ::step],
+    np.ma.masked_where(land_out, u_out)[::step, ::step],
+    np.ma.masked_where(land_out, v_out)[::step, ::step],
     scale=10,
 )
 ax.set_xlabel("longitude")
 ax.set_ylabel("latitude")
+ax.set_facecolor(LAND_COLOR)
+ax.contour(lon_out, lat_out, land_out.astype(float), levels=[0.5], colors="k", linewidths=0.9)
 ax.set_title("Champ (U, V) regrillé, sous-échantillonné pour lisibilité")
 st.pyplot(fig)
 
 st.divider()
 st.subheader("4. Contrôle qualité")
-mean_native = float(np.nanmean(uos))
-mean_regrid = float(np.nanmean(scalar_out))
+mean_native = float(np.nanmean(np.where(land_in, np.nan, uos)))
+mean_regrid = float(np.nanmean(np.where(land_out, np.nan, np.ma.filled(scalar_out, np.nan))))
 ecart = abs(mean_native - mean_regrid) / abs(mean_native) * 100
 
 c1, c2, c3 = st.columns(3)
