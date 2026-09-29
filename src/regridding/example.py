@@ -3,7 +3,9 @@ Exemple de regrillage NEMO/ORCA025 -> grille standard.
 
 Exécution :
 
-    uv run python notebooks/01_exemple_regrillage.py
+    uv run mercator-regridding-example
+
+(ou directement : uv run python -m regridding.example)
 
 Déroulé :
 1. Charger le mesh_mask (grille curvilinéaire ORCA025, mer du Nord).
@@ -22,8 +24,8 @@ import xarray as xr
 
 from regridding.core import build_target_grid, regrid_scalar, regrid_vector
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "NemoNorthSeaORCA025-N006_data"
-OUTPUT_DIR = Path(__file__).resolve().parents[1] / "outputs"
+DATA_DIR = Path(__file__).resolve().parents[2] / "data" / "NemoNorthSeaORCA025-N006_data"
+OUTPUT_DIR = Path(__file__).resolve().parents[2] / "outputs"
 
 
 def load_mesh_mask() -> xr.Dataset:

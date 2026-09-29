@@ -1,7 +1,7 @@
 [project]
-name = "mercator-regridding-exemple"
+name = "mercator-regridding"
 version = "0.1.0"
-description = "Add your description here"
+description = "Exemple de regrillage NEMO/ORCA025 -> grille standard, pour le DCE Mercator Ocean 24249L00"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -18,6 +18,10 @@ dependencies = [
     "xarray>=2026.7.0",
 ]
 
+[project.scripts]
+mercator-regridding-download = "regridding.download:main"
+mercator-regridding-example = "regridding.example:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -27,4 +31,5 @@ packages = ["src/regridding"]
 
 [tool.uv]
 package = true
+
 

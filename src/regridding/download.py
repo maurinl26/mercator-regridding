@@ -17,7 +17,7 @@ from pathlib import Path
 
 import requests
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 BASE_URL = "https://raw.githubusercontent.com/Parcels-code/parcels-data/main/data"
 
 # On ne télécharge qu'un seul pas de temps (U/V/W) + le mesh_mask : suffisant
