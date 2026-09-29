@@ -1,14 +1,15 @@
-# Mercator Regridding — exemple pédagogique
+# Mercator Regridding : prototype
 
-Petit exercice pour évaluer le regrillage de champs océanographiques sur
-grille native NEMO/ORCA (curvilinéaire, C-grid Arakawa) vers une grille
-standard — même problématique que le DCE Mercator Ocean « Cloud Optimised
-Regridding » (24249L00).
+Prototype de regrillage de champs océanographiques, d'une grille native NEMO/ORCA
+(curvilinéaire, C-grid Arakawa) vers une grille standard régulière. Il porte la
+problématique du DCE Mercator Ocean « Cloud Optimised Regridding » (24249L00) :
+regrillage de champs scalaires et vectoriels, contrôle par l'utilisateur, validation
+visuelle et quantitative.
 
-Objectif : présenter le sujet à Ophélie avant attribution du marché, sans
-entrer dans la science du regrillage (elle est côté UI/UX + MCP) — juste
-montrer concrètement de quoi il s'agit : grille native tordue → grille
-standard régulière, sur un champ scalaire et un champ vectoriel.
+Le prototype illustre une chaîne complète sur un cas réel (courant de surface, mer du
+Nord) : chargement des données natives, regrillage par kd-tree, visualisation des
+maillages, masque terre/mer et contrôle qualité. Ses limites par rapport au cahier des
+charges sont listées plus bas.
 
 ## Installation
 
@@ -58,11 +59,11 @@ cartésiennes, puis interrogés par plus-proche-voisin ou pondération
 gaussienne). C'est suffisant pour illustrer la mécanique du problème, mais
 ce n'est **pas un remapping conservatif** — un écart de quelques % sur la
 moyenne du champ regrillé (mer uniquement) est attendu (lissage gaussien), pas un
-bug. Le vrai moteur de calcul du service (si le marché est remporté) devra
+bug. Le moteur de calcul du service final devra
 trancher entre repasser par ESMF via un environnement conda dédié, ou
 implémenter un calcul de poids par recouvrement d'aire.
 
-## Exemple : regrillage scalaire + vectoriel
+## Chaîne complète en ligne de commande
 
 ```bash
 uv run mercator-regridding-example
@@ -100,7 +101,7 @@ et la grille regrillée avec leurs maillages, le trait de côte et la terre en a
 un zoom superposant les deux maillages (natif en bleu, cible en rouge), le champ
 vectoriel (quiver) et un contrôle qualité (écart de moyenne sur la mer).
 
-Limites de l'exemple : une seule source, une seule méthode (kd-tree + gaussienne),
+Limites du prototype : une seule source, une seule méthode (kd-tree + gaussienne),
 pas de rotation vectorielle réelle, de conservation des flux ni de regrillage
 vertical. Pas de connexion au MDS, à EDITO ni de MCP.
 

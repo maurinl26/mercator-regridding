@@ -1,4 +1,4 @@
-"""Fonctions de regrillage — exemple pédagogique pour le DCE Mercator Ocean.
+"""Fonctions de regrillage — prototype pour le DCE Mercator Ocean.
 
 Objectif : reproduire, à petite échelle, le cœur technique demandé par le
 marché « Cloud Optimised Regridding » (24249L00) :

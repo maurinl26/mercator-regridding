@@ -49,7 +49,7 @@ des grilles *standard* régulières (latitude/longitude), plus simples à utilis
 Le **regrillage** est la transformation de l'une à l'autre : chaque point de la grille
 de destination est estimé à partir des points voisins de la grille source.
 
-**Cet exemple** (support du DCE Mercator Ocean « Cloud Optimised Regridding »,
+**Ce prototype** (pour le DCE Mercator Ocean « Cloud Optimised Regridding »,
 24249L00) : champ de courant de surface NEMO/ORCA025, mer du Nord, regrillé vers
 une grille régulière. Le service final devra couvrir d'autres couples de grilles,
 méthodes et variables (scalaires, vecteurs, flux) ; ici, un seul cas est illustré.
@@ -77,11 +77,11 @@ Le service sera utilisable de deux façons :
 - **Mode avancé** : choix de la méthode et de ses paramètres, masques d'entrée et de
   sortie, personnalisation de la sortie (renommer des variables, retirer des dimensions).
 
-*Cet exemple est une maquette locale : données d'exemple téléchargées, pas de
+*Ce prototype tourne en local : données d'exemple téléchargées, pas de
 connexion au MDS ni à EDITO, pas d'interface MCP.*
 """
 )
-st.caption("Données : jeu d'exemple NEMO/ORCA025 (OceanParcels). Exercice pédagogique.")
+st.caption("Données : jeu d'exemple NEMO/ORCA025 (OceanParcels). Prototype.")
 
 
 @st.cache_data
@@ -182,9 +182,9 @@ with c_meth:
         "Méthode d'interpolation",
         ["Automatique (pondération gaussienne)"],
         help="Autres méthodes du cahier des charges (bilinéaire, bicubique, "
-        "conservatif ordre 1/2, IDW) : non implémentées dans cet exemple.",
+        "conservatif ordre 1/2, IDW) : non implémentées dans ce prototype.",
     )
-    st.caption("Pas de remapping conservatif par aire (ESMF) dans cet exemple : limite assumée.")
+    st.caption("Pas de remapping conservatif par aire (ESMF) dans ce prototype : limite assumée.")
 with c_dst:
     st.markdown("**3. Destination**")
     resolution = st.select_slider(
@@ -271,7 +271,7 @@ st.divider()
 st.subheader("3. Champ vectoriel (U, V) regrillé")
 st.write(
     "Rotation grille → géographique non appliquée (angle absent du "
-    "mesh_mask simplifié utilisé pour cet exemple) — étape à compléter sur "
+    "mesh_mask simplifié utilisé pour ce prototype) — étape à compléter sur "
     "un mesh_mask complet."
 )
 
@@ -306,5 +306,5 @@ st.caption(
     "L'écart provient du lissage gaussien (kd-tree, pondération par "
     "distance) — pas d'un bug. Un remapping conservatif par aire (ESMF) "
     "réduirait cet écart ; c'est un choix à faire dans le moteur de calcul "
-    "final du service, pas dans cet exemple pédagogique."
+    "final du service, pas dans ce prototype."
 )

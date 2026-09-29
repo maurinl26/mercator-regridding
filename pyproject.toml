@@ -1,7 +1,7 @@
 [project]
 name = "mercator-regridding"
 version = "0.1.0"
-description = "Exemple de regrillage NEMO/ORCA025 -> grille standard, pour le DCE Mercator Ocean 24249L00"
+description = "Prototype de regrillage NEMO/ORCA025 -> grille standard, pour le DCE Mercator Ocean 24249L00"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

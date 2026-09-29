@@ -21,7 +21,7 @@ DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 BASE_URL = "https://raw.githubusercontent.com/Parcels-code/parcels-data/main/data"
 
 # On ne télécharge qu'un seul pas de temps (U/V/W) + le mesh_mask : suffisant
-# pour l'exercice de regrillage (pas besoin des ~7 pas de temps disponibles).
+# pour le prototype de regrillage (pas besoin des ~7 pas de temps disponibles).
 NORTH_SEA_FILES = [
     "coordinates.nc",
     "ORCA025-N06_20000104d05U.nc",
@@ -29,7 +29,7 @@ NORTH_SEA_FILES = [
     "ORCA025-N06_20000104d05W.nc",
 ]
 
-# Petit jeu pédagogique : champ purement zonal sur grille ORCA025
+# Jeu de test simple : champ purement zonal sur grille ORCA025
 # (aqua-planète). Utile pour vérifier la mécanique de rotation vectorielle
 # sur un cas simple avant le cas réel mer du Nord.
 CURVILINEAR_FILES = [
