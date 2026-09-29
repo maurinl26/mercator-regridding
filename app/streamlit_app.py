@@ -147,14 +147,26 @@ def compute_regridding(resolution_deg: float, radius_km: float, sigma_km: float)
             land_out, outside_out)
 
 
+def ensure_data():
+    """Télécharge les fichiers mer du Nord s'ils manquent (ex. app déployée)."""
+    needed = ["coordinates.nc", "ORCA025-N06_20000104d05U.nc", "ORCA025-N06_20000104d05V.nc"]
+    if all((DATA_DIR / f).exists() for f in needed):
+        return
+    from regridding.download import download_dataset
+
+    with st.spinner("Premier démarrage : téléchargement des données (~25 Mo)..."):
+        download_dataset("NemoNorthSeaORCA025-N006_data", needed)
+
+
 try:
+    ensure_data()
     lon_in, lat_in = load_mesh_mask()
     uos, vos = load_velocity_fields()
     data_available = True
-except (FileNotFoundError, StopIteration):
+except Exception as exc:
     data_available = False
-    st.warning(
-        "Données introuvables. Lancer d'abord : "
+    st.error(
+        f"Données indisponibles ({exc}). En local : "
         "`uv run mercator-regridding-download`."
     )
 
