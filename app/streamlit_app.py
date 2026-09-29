@@ -55,6 +55,32 @@ une grille régulière. Le service final devra couvrir d'autres couples de grill
 méthodes et variables (scalaires, vecteurs, flux) ; ici, un seul cas est illustré.
 """
 )
+
+st.markdown(
+    """
+**Service cible** (cahier des charges, SOW 24249L00). Le regrillage sera un service
+conteneurisé, sans état, déployé sur la plateforme **EDITO** (Digital Twin of the
+Ocean) et publié dans son catalogue de services. Il doit tenir dans les quotas
+standard d'une instance EDITO (8 CPU, 32 Go de RAM, sans GPU ; image < 1 Go). Les
+données transitent par le stockage objet d'EDITO : l'utilisateur peut parcourir les
+jeux de données du **Marine Data Store** de Copernicus Marine, importer des données
+externes, et choisir la destination (par défaut son espace EDITO). Les sorties sont
+au format NetCDF4 ou Zarr, conformes ARCO. Trois sens de regrillage sont attendus :
+natif vers standard CMEMS, natif vers natif, standard vers natif.
+
+Le service sera utilisable de deux façons :
+
+- **Mode simple** : trois choix (source, méthode, destination), la méthode et ses
+  paramètres étant sélectionnés automatiquement. L'utilisateur peut aussi lancer le
+  regrillage en langage naturel via l'agent **Ocean Intelligence**, grâce à une
+  interface **MCP** exposée par le service.
+- **Mode avancé** : choix de la méthode et de ses paramètres, masques d'entrée et de
+  sortie, personnalisation de la sortie (renommer des variables, retirer des dimensions).
+
+*Cet exemple est une maquette locale : données d'exemple téléchargées, pas de
+connexion au MDS ni à EDITO, pas d'interface MCP.*
+"""
+)
 st.caption("Données : jeu d'exemple NEMO/ORCA025 (OceanParcels). Exercice pédagogique.")
 
 

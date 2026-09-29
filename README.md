@@ -82,7 +82,7 @@ Ce script :
 
 Résultat typique : les structures spatiales (courant côtier norvégien,
 tourbillons en mer de Norvège) sont bien préservées après regrillage ; la
-moyenne globale du champ diffère d'environ 25-30 % à cause du lissage
+moyenne (calculée sur la mer uniquement) diffère d'environ 5 % à cause du lissage
 gaussien (pas un artefact géographique).
 
 ## App interactive (Streamlit)
