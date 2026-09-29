@@ -24,12 +24,23 @@ DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "NemoNorthSeaORCA025-N
 
 st.set_page_config(page_title="Regrillage Mercator — exemple", layout="wide")
 
-st.title("Exemple de regrillage — grille native NEMO/ORCA025 → grille standard")
-st.caption(
-    "Exercice pédagogique pour le DCE Mercator Ocean « Cloud Optimised "
-    "Regridding » (24249L00). Données : jeu d'exemple NEMO/ORCA025, mer du "
-    "Nord (OceanParcels)."
+st.title("Regrillage océanographique : de la grille native à la grille standard")
+st.markdown(
+    """
+**Contexte.** Les modèles océaniques NEMO calculent sur une grille *native* (ORCA) :
+curvilinéaire, déformée vers le pôle Nord, avec les variables (T, U, V) décalées
+sur des nœuds différents (C-grid). Le service Copernicus Marine diffuse en revanche
+des grilles *standard* régulières (latitude/longitude), plus simples à utiliser.
+Le **regrillage** est la transformation de l'une à l'autre : chaque point de la grille
+de destination est estimé à partir des points voisins de la grille source.
+
+**Cet exemple** (support du DCE Mercator Ocean « Cloud Optimised Regridding »,
+24249L00) : champ de courant de surface NEMO/ORCA025, mer du Nord, regrillé vers
+une grille régulière. Le service final devra couvrir d'autres couples de grilles,
+méthodes et variables (scalaires, vecteurs, flux) ; ici, un seul cas est illustré.
+"""
 )
+st.caption("Données : jeu d'exemple NEMO/ORCA025 (OceanParcels). Exercice pédagogique.")
 
 
 @st.cache_data
@@ -93,19 +104,44 @@ except (FileNotFoundError, StopIteration):
 if not data_available:
     st.stop()
 
-st.sidebar.header("Paramètres du regrillage")
-resolution = st.sidebar.slider("Résolution de la grille cible (°)", 0.02, 0.3, 0.1, 0.02)
-radius_km = st.sidebar.slider("Rayon d'influence (km)", 10, 150, 50, 10)
-sigma_km = st.sidebar.slider("Sigma (lissage gaussien, km)", 5, 100, 25, 5)
-
-show_mesh = st.sidebar.checkbox("Afficher les maillages sur les cartes", value=True)
-mesh_step = st.sidebar.slider("Densité des lignes de maillage (1 ligne sur N)", 1, 20, 6)
-
-st.sidebar.info(
-    "Méthode : pondération gaussienne (kd-tree, pyresample). Pas de "
-    "remapping conservatif par aire (ESMF) dans cet exemple -- limite "
-    "assumée, à traiter par le moteur de calcul final."
+st.subheader("Définir le regrillage")
+st.caption(
+    "Mode simple : trois choix (source, méthode, destination). Les paramètres "
+    "fins sont déterminés automatiquement ; ils sont modifiables en mode avancé."
 )
+
+c_src, c_meth, c_dst = st.columns(3)
+with c_src:
+    st.markdown("**1. Source**")
+    st.selectbox(
+        "Jeu de données",
+        ["NEMO ORCA025 — mer du Nord (grille native, C-grid)"],
+        help="Grille curvilinéaire : les lignes ne suivent pas les méridiens/parallèles.",
+    )
+    st.caption(f"Grille {lon_in.shape[0]} × {lon_in.shape[1]} — variables : uos, vos")
+with c_meth:
+    st.markdown("**2. Méthode**")
+    st.selectbox(
+        "Méthode d'interpolation",
+        ["Automatique (pondération gaussienne)"],
+        help="Autres méthodes du cahier des charges (bilinéaire, bicubique, "
+        "conservatif ordre 1/2, IDW) : non implémentées dans cet exemple.",
+    )
+    st.caption("Pas de remapping conservatif par aire (ESMF) dans cet exemple : limite assumée.")
+with c_dst:
+    st.markdown("**3. Destination**")
+    resolution = st.select_slider(
+        "Grille standard (régulière), résolution (°)",
+        options=[0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.24, 0.3],
+        value=0.1,
+    )
+
+with st.expander("Mode avancé : paramètres du lissage et affichage"):
+    a1, a2, a3, a4 = st.columns(4)
+    radius_km = a1.slider("Rayon d'influence (km)", 10, 150, 50, 10)
+    sigma_km = a2.slider("Sigma (km)", 5, 100, 25, 5)
+    show_mesh = a3.checkbox("Afficher les maillages", value=True)
+    mesh_step = a4.slider("1 ligne de maillage sur N", 1, 20, 6)
 
 lon_out, lat_out, scalar_out, u_out, v_out = compute_regridding(
     resolution, radius_km, sigma_km
