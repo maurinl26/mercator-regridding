@@ -11,6 +11,21 @@ Nord) : chargement des données natives, regrillage par kd-tree, visualisation d
 maillages, masque terre/mer et contrôle qualité. Ses limites par rapport au cahier des
 charges sont listées plus bas.
 
+## Démarrage rapide
+
+Prérequis : [uv](https://docs.astral.sh/uv/) (Python 3.12 géré automatiquement).
+
+```bash
+git clone https://github.com/maurinl26/mercator-regridding
+cd mercator-regridding
+uv sync                               # installe les dépendances
+uv run mercator-regridding-download   # télécharge les données (~35 Mo)
+uv run mercator-regridding-app        # lance l'app sur http://localhost:8501
+```
+
+Variante sans interface : `uv run mercator-regridding-example` exécute la chaîne
+complète en ligne de commande et enregistre la figure dans `outputs/`.
+
 ## Installation
 
 Tout le projet est géré en `uv`, pas de conda/micromamba.
