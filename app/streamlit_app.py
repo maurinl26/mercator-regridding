@@ -238,7 +238,14 @@ st.subheader("Zoom sur les maillages : native (bleu) vs cible (rouge)")
 st.write(
     "Chaque point de la grille cible (rouge, régulière) est calculé à partir "
     "des points voisins de la grille native (bleue, déformée) : c'est ce "
-    "passage qui est réalisé par le regrillage."
+    "passage qui est réalisé par le regrillage.\n\n"
+    "**Méthode : kd-tree.** Les points de la grille native sont placés dans un "
+    "kd-tree, construit sur leurs coordonnées cartésiennes 3D (sphère unité), ce "
+    "qui évite les difficultés des longitudes/latitudes (pôle, changement de "
+    "date). Pour chaque point cible, on cherche les voisins natifs dans le rayon "
+    "d'influence, puis on les pondère par une gaussienne de la distance (sigma). "
+    "Le trait de côte natif (noir) et celui de la grille cible (rouge pointillé) "
+    "montrent l'effet du regrillage sur le masque terre/mer."
 )
 lo_min, lo_max = float(lon_in.min()), float(lon_in.max())
 la_min, la_max = float(lat_in.min()), float(lat_in.max())
