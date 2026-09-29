@@ -18,8 +18,8 @@ Tout le projet est géré en `uv`, pas de conda/micromamba.
 uv sync
 ```
 
-Ceci installe : xarray, cartopy, pyresample, matplotlib, streamlit, plotly,
-netCDF4, parcels, requests, dans un venv local `.venv/`.
+Ceci installe (venv local `.venv/`) : xarray, pyresample, matplotlib, streamlit,
+netCDF4, scipy, requests, etc. (cartopy, plotly et parcels sont déclarés mais non utilisés).
 
 ## Données
 
@@ -57,7 +57,7 @@ grille cible sont projetés sur une sphère unité en coordonnées 3D
 cartésiennes, puis interrogés par plus-proche-voisin ou pondération
 gaussienne). C'est suffisant pour illustrer la mécanique du problème, mais
 ce n'est **pas un remapping conservatif** — un écart de quelques % sur la
-moyenne globale du champ regrillé est attendu (lissage gaussien), pas un
+moyenne du champ regrillé (mer uniquement) est attendu (lissage gaussien), pas un
 bug. Le vrai moteur de calcul du service (si le marché est remporté) devra
 trancher entre repasser par ESMF via un environnement conda dédié, ou
 implémenter un calcul de poids par recouvrement d'aire.
@@ -93,11 +93,16 @@ uv run mercator-regridding-app
 
 (wrapper de `streamlit run app/streamlit_app.py` ; les options Streamlit passent telles quelles, ex. `uv run mercator-regridding-app --server.port 8502 --server.headless true`).
 
-Affiche côte à côte la grille native et la grille regrillée, avec des
-sliders pour ajuster la résolution cible, le rayon d'influence et le sigma
-du lissage gaussien, plus un champ vectoriel (quiver) et un contrôle
-qualité (écart de moyenne). Les maillages (natif déformé, cible régulière) sont affichés sur les cartes, plus un zoom qui superpose les deux grilles (natif en bleu, cible en rouge) pour visualiser la transformation. Pensée pour être manipulée directement, sans
-lire le code.
+Présente d'abord le contexte (grilles native/standard, service cible EDITO/MDS/MCP
+d'après le SOW), puis trois choix (source, méthode, destination) et un mode
+avancé (rayon d'influence, sigma, maillages). Affiche côte à côte la grille native
+et la grille regrillée avec leurs maillages, le trait de côte et la terre en aplat,
+un zoom superposant les deux maillages (natif en bleu, cible en rouge), le champ
+vectoriel (quiver) et un contrôle qualité (écart de moyenne sur la mer).
+
+Limites de l'exemple : une seule source, une seule méthode (kd-tree + gaussienne),
+pas de rotation vectorielle réelle, de conservation des flux ni de regrillage
+vertical. Pas de connexion au MDS, à EDITO ni de MCP.
 
 ## Structure
 
